@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Booking cancelled — Calendly</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --ink: #0d0f12; --ink-2: #3c4049; --ink-3: #7a808c;
+            --surface: #ffffff; --surface-2: #f4f4f1;
+            --accent: #2c5fff; --accent-lt: #e8eeff;
+            --border: #e2e0dc;
+            --font-head: 'DM Serif Display', Georgia, serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+        body {
+            font-family: var(--font-body); color: var(--ink);
+            background: var(--surface-2); min-height: 100vh;
+            display: flex; flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        nav {
+            background: #fff; border-bottom: 1px solid var(--border);
+            padding: 0 40px; height: 60px;
+            display: flex; align-items: center;
+        }
+        .nav-logo { font-family: var(--font-head); font-size: 1.3rem; }
+        .nav-logo span { color: var(--accent); }
+        main {
+            flex: 1; display: flex;
+            align-items: center; justify-content: center;
+            padding: 60px 20px;
+        }
+        .done-card {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: 20px; max-width: 440px; width: 100%;
+            padding: 48px 40px; text-align: center;
+        }
+        .icon-circle {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: var(--surface-2);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .icon-circle svg { width: 30px; height: 30px; color: var(--ink-3); }
+        .done-title {
+            font-family: var(--font-head); font-size: 1.6rem;
+            color: var(--ink); margin-bottom: 12px;
+        }
+        .done-text {
+            font-size: 0.9rem; color: var(--ink-2);
+            line-height: 1.7; margin-bottom: 32px;
+        }
+        .flash-msg {
+            background: var(--surface-2); border-radius: 10px;
+            padding: 12px 16px; font-size: 0.875rem;
+            color: var(--ink-2); margin-bottom: 28px;
+        }
+        .btn-primary {
+            display: inline-block; padding: 13px 32px;
+            background: var(--accent); color: #fff;
+            border-radius: 999px; font-size: 0.9rem;
+            font-weight: 600; transition: all .2s;
+        }
+        .btn-primary:hover { background: #1a3fcf; transform: translateY(-1px); }
+        .footer-note {
+            margin-top: 20px; font-size: 0.78rem; color: var(--ink-3);
+        }
+        .footer-note a { color: var(--accent); }
+    </style>
+</head>
+<body>
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+</nav>
+<main>
+    <div class="done-card">
+        <div class="icon-circle">
+            <svg viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+            </svg>
+        </div>
+        <h1 class="done-title">Booking cancelled</h1>
+
+        <div class="flash-msg" th:if="${message != null}" th:text="${message}">
+            Your booking has been cancelled.
+        </div>
+        <div class="flash-msg" th:if="${message == null}">
+            Your booking has been successfully cancelled.
+            A confirmation email is on its way.
+        </div>
+
+        <p class="done-text">
+            Changed your mind? You can always book a new time.
+        </p>
+
+        <a th:href="@{/}" class="btn-primary">Book a new time</a>
+
+        <p class="footer-note">
+            Powered by <a th:href="@{/}">Calendly</a>
+        </p>
+    </div>
+</main>
+</body>
+</html>

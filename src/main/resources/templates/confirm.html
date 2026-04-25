@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Booking confirmed — Calendly</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:       #0d0f12;
+            --ink-2:     #3c4049;
+            --ink-3:     #7a808c;
+            --surface:   #ffffff;
+            --surface-2: #f4f4f1;
+            --accent:    #2c5fff;
+            --accent-lt: #e8eeff;
+            --green:     #00b87a;
+            --green-lt:  #eaf3de;
+            --green-dk:  #27500a;
+            --border:    #e2e0dc;
+            --radius:    12px;
+            --radius-lg: 20px;
+            --font-head: 'DM Serif Display', Georgia, serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: var(--surface-2);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* ── Nav ── */
+        nav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+        .nav-logo {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        /* ── Main ── */
+        main {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 60px 20px 80px;
+        }
+
+        .confirm-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 560px;
+            overflow: hidden;
+        }
+
+        /* Green confirmed banner */
+        .confirm-banner {
+            background: var(--green-lt);
+            border-bottom: 1px solid #c0dd97;
+            padding: 28px 40px;
+            text-align: center;
+        }
+
+        .check-circle {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .check-circle svg {
+            width: 28px; height: 28px;
+            color: #fff;
+        }
+
+        .confirm-title {
+            font-family: var(--font-head);
+            font-size: 1.6rem;
+            color: var(--green-dk);
+            margin-bottom: 6px;
+        }
+        .confirm-sub {
+            font-size: 0.9rem;
+            color: #3b6d11;
+        }
+        .confirm-sub strong { font-weight: 600; }
+
+        /* Body */
+        .confirm-body { padding: 32px 40px; }
+
+        /* Host row */
+        .host-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .host-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--accent-lt);
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .host-name { font-weight: 600; font-size: 0.95rem; color: var(--ink); }
+        .host-role { font-size: 0.78rem; color: var(--ink-3); margin-top: 2px; }
+
+        /* Details grid */
+        .details-heading {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--ink-3);
+            margin-bottom: 12px;
+        }
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-icon {
+            width: 18px; height: 18px;
+            color: var(--ink-3);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .detail-label { color: var(--ink-3); font-size: 0.8rem; margin-bottom: 2px; }
+        .detail-value { color: var(--ink); font-weight: 500; }
+
+        /* Calendar add buttons */
+        .cal-add {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .cal-heading {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--ink-3);
+            margin-bottom: 12px;
+        }
+        .cal-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .cal-btn {
+            padding: 9px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--ink-2);
+            background: #fff;
+            cursor: pointer;
+            transition: all .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cal-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Cancel link */
+        .cancel-section {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: var(--surface-2);
+            border-radius: var(--radius);
+            font-size: 0.825rem;
+            color: var(--ink-3);
+            text-align: center;
+            line-height: 1.6;
+        }
+        .cancel-link {
+            color: #d32f2f;
+            font-weight: 500;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        .confirm-footer {
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            padding: 16px 40px;
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--ink-3);
+        }
+        .confirm-footer a { color: var(--accent); }
+
+        @media (max-width: 600px) {
+            .confirm-body  { padding: 24px 20px; }
+            .confirm-banner { padding: 24px 20px; }
+            .confirm-footer { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+</nav>
+
+<main>
+    <div class="confirm-card">
+
+        <!-- Green confirmed banner -->
+        <div class="confirm-banner">
+            <div class="check-circle">
+                <svg viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            </div>
+            <h1 class="confirm-title">Booking confirmed!</h1>
+            <p class="confirm-sub">
+                A confirmation has been sent to
+                <strong th:text="${booking.guestEmail}">guest@email.com</strong>
+            </p>
+        </div>
+
+        <div class="confirm-body">
+            <!-- Host -->
+            <div class="host-row">
+                <div class="host-avatar"
+                     th:text="${#strings.substring(
+                         booking.assignedHost.profile.displayName, 0, 1)}">A</div>
+                <div>
+                    <div class="host-name"
+                         th:text="${booking.assignedHost.profile.displayName}">
+                        Aarav Kumar
+                    </div>
+                    <div class="host-role">Your host</div>
+                </div>
+            </div>
+
+            <!-- Meeting details -->
+            <div class="details-heading">Meeting details</div>
+
+            <div class="detail-row">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8"  y1="2" x2="8"  y2="6"/>
+                    <line x1="3"  y1="10" x2="21" y2="10"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Date</div>
+                    <div class="detail-value" id="confirm-date">
+                        <!-- filled by JS -->
+                        <noscript th:text="${#temporals.format(booking.startTime, 'EEEE, MMMM d, yyyy')}"></noscript>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Time</div>
+                    <div class="detail-value" id="confirm-time">
+                        <noscript th:text="${#temporals.format(booking.startTime, 'h:mm a')}
+                                         + ' – '
+                                         + ${#temporals.format(booking.endTime, 'h:mm a')}"></noscript>
+                    </div>
+<!--                    <div id="confirm-tz" style="font-size:0.78rem;color:var(&#45;&#45;ink-3);margin-top:2px;"></div>-->
+                </div>
+            </div>
+
+            <div class="detail-row">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Meeting type</div>
+                    <div class="detail-value"
+                         th:text="${booking.eventType.title}">
+                        30-min intro call
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-row"
+                 th:if="${booking.guestNotes != null and !booking.guestNotes.isEmpty()}">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Your notes</div>
+                    <div class="detail-value" th:text="${booking.guestNotes}">Notes</div>
+                </div>
+            </div>
+
+            <!-- Meeting link -->
+            <div class="detail-row"
+                 th:if="${booking.eventType.meetingLink != null and !booking.eventType.meetingLink.isEmpty()}">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Join meeting</div>
+                    <a th:href="${booking.eventType.meetingLink}"
+                       th:text="${booking.eventType.meetingLink}"
+                       style="color:var(--accent);font-weight:500;word-break:break-all;">
+                        Meeting link
+                    </a>
+                </div>
+            </div>
+
+            <!-- Add to calendar -->
+            <div class="cal-add">
+                <div class="cal-heading">Add to calendar</div>
+                <div class="cal-buttons">
+                    <a class="cal-btn" href="#" onclick="addToGoogleCal(); return false;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8"  y1="2" x2="8"  y2="6"/>
+                            <line x1="3"  y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Google Calendar
+                    </a>
+                    <a class="cal-btn" th:href="@{/booking/{id}/ics(id=${booking.id})}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download .ics
+                    </a>
+                </div>
+            </div>
+
+            <!-- Additional guests -->
+            <div class="detail-row"
+                 th:if="${not #lists.isEmpty(booking.additionalGuests)}">
+                <svg class="detail-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                <div>
+                    <div class="detail-label">Additional attendees</div>
+                    <div th:each="guest : ${booking.additionalGuests}"
+                         class="detail-value"
+                         th:text="${guest.name} + ' (' + ${guest.email} + ')'">
+                        Guest Name (guest@email.com)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit / Cancel actions -->
+            <div class="cancel-section">
+                <a th:href="@{/edit/{token}(token=${booking.guestToken})}"
+                   style="color:var(--accent);font-weight:500;text-decoration:underline;">
+                    Edit this booking
+                </a>
+                &nbsp;·&nbsp;
+                <a th:href="@{/cancel/{token}(token=${booking.guestToken})}"
+                   class="cancel-link">
+                    Cancel
+                </a>
+                — no login required.
+            </div>
+
+        </div>
+
+        <div class="confirm-footer">
+            Scheduled with <a th:href="@{/}">Calendly</a>
+        </div>
+    </div>
+</main>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const START_UTC_MS  = /*[[${startUtcMs}]]*/ 0;
+const END_UTC_MS    = /*[[${endUtcMs}]]*/ 0;
+const HOST_TZ       = /*[[${hostTimezone}]]*/ 'UTC';
+const EVENT_TITLE   = /*[[${booking.eventType.title}]]*/ 'Meeting';
+const HOST_NAME     = /*[[${booking.assignedHost.profile.displayName}]]*/ 'Host';
+
+const GUEST_TZ  = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const startDate = new Date(START_UTC_MS);
+const endDate   = new Date(END_UTC_MS);
+
+function fmtTz(tz) { return tz.replace(/_/g, ' ').split('/').pop(); }
+
+// Date in guest's timezone
+// document.getElementById('confirm-date').textContent =
+//     new Intl.DateTimeFormat('en-US', {
+//         timeZone: GUEST_TZ, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+//     }).format(startDate);
+//
+// // Time range in guest's timezone
+// const fmtTime = (d, tz) => new Intl.DateTimeFormat('en-US', {
+//     timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true
+// }).format(d);
+//
+// document.getElementById('confirm-time').textContent =
+//     fmtTime(startDate, GUEST_TZ) + ' – ' + fmtTime(endDate, GUEST_TZ);
+//
+// // Timezone info row — show both if different
+// const tzInfo = GUEST_TZ !== HOST_TZ
+//     ? 'Your time (' + fmtTz(GUEST_TZ) + ')  ·  Host: '
+//       + fmtTime(startDate, HOST_TZ) + ' – ' + fmtTime(endDate, HOST_TZ)
+//       + ' (' + fmtTz(HOST_TZ) + ')'
+//     : fmtTz(GUEST_TZ);
+// document.getElementById('confirm-tz').textContent = tzInfo;
+// Show everything in host timezone only
+document.getElementById('confirm-date').textContent =
+    new Intl.DateTimeFormat('en-US', {
+        timeZone: HOST_TZ,
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    }).format(startDate);
+
+const fmtTime = (d, tz) => new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+}).format(d);
+
+document.getElementById('confirm-time').textContent =
+    fmtTime(startDate, HOST_TZ) + ' - ' + fmtTime(endDate, HOST_TZ);
+
+// remove extra timezone text
+document.getElementById('confirm-tz').textContent = '';
+// ── Google Calendar link ─────────────────────────────────────
+function addToGoogleCal() {
+    const fmt = ms => new Date(ms).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+              + '&text='    + encodeURIComponent(EVENT_TITLE + ' with ' + HOST_NAME)
+              + '&dates='   + fmt(START_UTC_MS) + '/' + fmt(END_UTC_MS)
+              + '&details=' + encodeURIComponent('Scheduled via Calendly');
+    window.open(url, '_blank');
+}
+/*]]>*/
+</script>
+
+</body>
+</html>

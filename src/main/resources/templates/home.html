@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Calendly — Meet Without the Back-and-Forth</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        /* ─── Reset & base ─── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:      #0d0f12;
+            --ink-2:    #3c4049;
+            --ink-3:    #7a808c;
+            --surface:  #ffffff;
+            --surface-2:#f4f4f1;
+            --surface-3:#eeecea;
+            --accent:   #2c5fff;
+            --accent-dk:#1a3fcf;
+            --accent-lt:#e8eeff;
+            --green:    #00b87a;
+            --border:   #e2e0dc;
+            --radius:   12px;
+            --radius-lg:20px;
+            --font-head:'DM Serif Display', Georgia, serif;
+            --font-body:'DM Sans', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: var(--surface);
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        img { display: block; max-width: 100%; }
+
+        /* ─── Nav ─── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 48px;
+            height: 68px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: var(--font-head);
+            font-size: 1.5rem;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--ink-2);
+            transition: color .2s;
+        }
+
+        .nav-links a:hover { color: var(--accent); }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border-radius: 999px;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+            border: none;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--ink-2);
+        }
+
+        .btn-ghost:hover { color: var(--accent); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-dk);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(44,95,255,.25);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 1.5px solid var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-lt);
+        }
+
+        .btn-large {
+            padding: 14px 32px;
+            font-size: 1rem;
+        }
+
+        /* ─── Hero ─── */
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 64px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 96px 48px 80px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-lt);
+            color: var(--accent);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .hero-badge-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .6; transform: scale(1.3); }
+        }
+
+        .hero h1 {
+            font-family: var(--font-head);
+            font-size: clamp(2.6rem, 4.5vw, 3.8rem);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            margin-bottom: 24px;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--ink-2);
+            line-height: 1.75;
+            max-width: 480px;
+            margin-bottom: 36px;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-note {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--ink-3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ─── Hero card (right side) ─── */
+        .hero-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.04);
+            animation: float 5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c3d4ff, #e8eeff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .card-meta-name { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+        .card-meta-sub { font-size: 0.78rem; color: var(--ink-3); }
+
+        .card-body { padding: 24px; }
+
+        .card-event-title {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+
+        .card-event-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            color: var(--ink-3);
+        }
+
+        .meta-pill svg { width: 13px; height: 13px; }
+
+        .mini-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .cal-head {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--ink-3);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            padding: 4px 0;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            color: var(--ink-2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .cal-day:hover { background: var(--accent-lt); color: var(--accent); }
+        .cal-day.empty { cursor: default; }
+        .cal-day.today {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+        }
+        .cal-day.available { font-weight: 500; }
+        .cal-day.unavailable { color: var(--border); cursor: default; }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .time-slot:hover, .time-slot.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ─── Logos strip ─── */
+        .logos-strip {
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 28px 48px;
+            text-align: center;
+        }
+
+        .logos-strip p {
+            font-size: 0.8rem;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .logos-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .logo-item {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            color: var(--ink-3);
+            letter-spacing: -0.01em;
+            opacity: 0.6;
+        }
+
+        /* ─── Features ─── */
+        .features {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 96px 48px;
+        }
+
+        .section-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: var(--font-head);
+            font-size: clamp(2rem, 3.5vw, 2.8rem);
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            max-width: 520px;
+            margin-bottom: 64px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition: all .25s;
+        }
+
+        .feature-card:hover {
+            background: var(--surface);
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(44,95,255,.10);
+        }
+
+        .feature-icon {
+            width: 48px; height: 48px;
+            background: var(--accent-lt);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon svg { width: 22px; height: 22px; color: var(--accent); }
+
+        .feature-card h3 {
+            font-family: var(--font-head);
+            font-size: 1.2rem;
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: var(--ink-2);
+            line-height: 1.7;
+        }
+
+        /* ─── How it works ─── */
+        .how-it-works {
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 96px 48px;
+        }
+
+        .how-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 48px;
+            margin-top: 64px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: calc(16.67% + 24px);
+            right: calc(16.67% + 24px);
+            height: 1px;
+            background: var(--border);
+        }
+
+        .step { position: relative; }
+
+        .step-number {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step h3 {
+            font-family: var(--font-head);
+            font-size: 1.2rem;
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            font-size: 0.9rem;
+            color: var(--ink-2);
+            line-height: 1.7;
+        }
+
+        /* ─── CTA ─── */
+        .cta {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 112px 48px;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-family: var(--font-head);
+            font-size: clamp(2rem, 4vw, 3.2rem);
+            line-height: 1.12;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            margin-bottom: 20px;
+        }
+
+        .cta h2 em {
+            font-style: italic;
+            color: var(--accent);
+        }
+
+        .cta p {
+            font-size: 1.05rem;
+            color: var(--ink-2);
+            margin-bottom: 40px;
+            line-height: 1.75;
+        }
+
+        .cta-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        /* ─── Footer ─── */
+        footer {
+            background: var(--ink);
+            color: rgba(255,255,255,.6);
+            padding: 64px 48px 40px;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 48px;
+            padding-bottom: 48px;
+            border-bottom: 1px solid rgba(255,255,255,.1);
+        }
+
+        .footer-brand .nav-logo { color: #fff; margin-bottom: 16px; display: block; }
+
+        .footer-brand p {
+            font-size: 0.875rem;
+            line-height: 1.7;
+            max-width: 300px;
+        }
+
+        .footer-col h4 {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: rgba(255,255,255,.4);
+            margin-bottom: 16px;
+        }
+
+        .footer-col ul { list-style: none; }
+
+        .footer-col ul li { margin-bottom: 10px; }
+
+        .footer-col ul li a {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,.6);
+            transition: color .2s;
+        }
+
+        .footer-col ul li a:hover { color: #fff; }
+
+        .footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 32px;
+            font-size: 0.8rem;
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 900px) {
+            nav { padding: 0 24px; }
+            .nav-links { display: none; }
+            .hero { grid-template-columns: 1fr; padding: 60px 24px; }
+            .hero-card { display: none; }
+            .features { padding: 64px 24px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .how-it-works { padding: 64px 24px; }
+            .steps { grid-template-columns: 1fr; }
+            .steps::before { display: none; }
+            .cta { padding: 64px 24px; }
+            .footer-top { grid-template-columns: 1fr 1fr; gap: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+
+<!--    <ul class="nav-links">-->
+<!--        <li><a th:href="@{/product}">Product</a></li>-->
+<!--        <li><a th:href="@{/pricing}">Pricing</a></li>-->
+<!--        <li><a th:href="@{/about}">About</a></li>-->
+<!--    </ul>-->
+
+    <div class="nav-actions">
+        <!-- Show Login/Sign up when NOT logged in -->
+        <div sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="btn btn-ghost">Log in</a>
+            <a th:href="@{/register}" class="btn btn-primary">Get started free</a>
+        </div>
+        <!-- Show dashboard link when logged in -->
+        <div sec:authorize="isAuthenticated()">
+            <a th:href="@{/dashboard}" class="btn btn-primary">Go to dashboard</a>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+    <div class="hero-copy">
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            <span th:text="${totalBookingsToday} + ' meetings booked today'">4,200 meetings booked today</span>
+        </div>
+
+        <h1>
+            Scheduling that<br/>
+            <em>gets out of the way</em>
+        </h1>
+
+        <p class="hero-desc"
+           th:text="${heroDescription}">
+            Share your link. Let others pick a time that works. No back-and-forth emails,
+            no double-bookings, no friction — just meetings that happen.
+        </p>
+
+        <div class="hero-actions">
+            <a th:href="@{/register}" class="btn btn-primary btn-large">Start for free</a>
+            <a th:href="@{/demo}" class="btn btn-outline btn-large">See a demo</a>
+        </div>
+
+        <p class="hero-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            No credit card required &nbsp;·&nbsp; Free plan available
+        </p>
+    </div>
+
+    <!-- Booking card preview -->
+    <div class="hero-card">
+        <div class="card-header">
+            <div class="card-avatar" th:text="${demoHostInitials}">NP</div>
+            <div>
+                <div class="card-meta-name" th:text="${demoHostName}">Nivedita Pal</div>
+                <div class="card-meta-sub">schedulr.app/nivedita</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="card-event-title">30-min intro call</div>
+            <div class="card-event-meta">
+                <span class="meta-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    30 min
+                </span>
+                <span class="meta-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    Google Meet
+                </span>
+            </div>
+
+            <!-- Mini calendar -->
+            <div class="mini-calendar">
+                <div class="cal-head">Su</div>
+                <div class="cal-head">Mo</div>
+                <div class="cal-head">Tu</div>
+                <div class="cal-head">We</div>
+                <div class="cal-head">Th</div>
+                <div class="cal-head">Fr</div>
+                <div class="cal-head">Sa</div>
+
+                <div class="cal-day empty"></div>
+                <div class="cal-day empty"></div>
+                <div class="cal-day unavailable">1</div>
+                <div class="cal-day available">2</div>
+                <div class="cal-day today">3</div>
+                <div class="cal-day available">4</div>
+                <div class="cal-day unavailable">5</div>
+
+                <div class="cal-day unavailable">6</div>
+                <div class="cal-day available">7</div>
+                <div class="cal-day available">8</div>
+                <div class="cal-day available">9</div>
+                <div class="cal-day available">10</div>
+                <div class="cal-day available">11</div>
+                <div class="cal-day unavailable">12</div>
+            </div>
+
+            <!-- Time slots -->
+            <div class="time-slots">
+                <div class="time-slot selected">9:00 AM</div>
+                <div class="time-slot">10:00 AM</div>
+                <div class="time-slot">11:00 AM</div>
+                <div class="time-slot">2:00 PM</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══ LOGOS STRIP ═══ -->
+<div class="logos-strip">
+    <p>Trusted by teams at</p>
+    <div class="logos-row">
+        <span class="logo-item" th:each="company : ${trustedCompanies}" th:text="${company}">Acme Corp</span>
+    </div>
+</div>
+
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features">
+    <p class="section-label">Why Calendly</p>
+    <h2 class="section-title">Everything you need to own your calendar</h2>
+
+    <div class="features-grid">
+
+        <!-- Feature 1 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                </svg>
+            </div>
+            <h3>One shareable link</h3>
+            <p>Your personal booking page lives at a clean URL. Share it anywhere — email, bio, Slack — and let guests choose their slot.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <h3>Smart availability</h3>
+            <p>Set your weekly hours once. Calendly automatically blocks off times you're already booked and respects your buffers.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.09 5.18 2 2 0 015.06 3h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 10.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 17v-.08z"/>
+                </svg>
+            </div>
+            <h3>Instant notifications</h3>
+            <p>Guests get a confirmation email the moment they book. You get notified too — with all the details, ready to go.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+            </div>
+            <h3>Multiple event types</h3>
+            <p>Create as many meeting types as you need — quick syncs, deep dives, consultations — each with its own duration and link.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+            <h3>Buffer time</h3>
+            <p>Automatically add breathing room before or after every meeting so you're never rushed between back-to-back calls.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+            </div>
+            <h3>Works anywhere</h3>
+            <p>Mobile-first booking pages that look great on any device. No app download needed — guests just open the link.</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-it-works">
+    <div class="how-inner">
+        <p class="section-label">How it works</p>
+        <h2 class="section-title">Set up in minutes, save hours every week</h2>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Create your account</h3>
+                <p>Sign up in seconds. Set your working hours, time zone, and what meeting types you want to offer.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Share your link</h3>
+                <p>Copy your personal scheduling link and paste it wherever you communicate — email, LinkedIn, your website.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Meetings just happen</h3>
+                <p>Guests pick a slot, fill in their name and email, and the booking is confirmed instantly for both of you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══ STATS ═══ (driven by model data) -->
+<div th:if="${showStats}" style="background: var(--surface); padding: 80px 48px; border-bottom: 1px solid var(--border);">
+    <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:48px; text-align:center;">
+        <div th:each="stat : ${stats}">
+            <div style="font-family:var(--font-head); font-size:3rem; letter-spacing:-.03em; color:var(--accent);" th:text="${stat.value}">10K+</div>
+            <div style="font-size:.9rem; color:var(--ink-2); margin-top:6px;" th:text="${stat.label}">meetings scheduled</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══ CTA ═══ -->
+<section class="cta">
+    <h2>Ready to reclaim<br/><em>your time?</em></h2>
+    <p>Join thousands of professionals who've stopped playing email tag and started scheduling with clarity.</p>
+    <div class="cta-actions">
+        <a th:href="@{/register}" class="btn btn-primary btn-large">Create free account</a>
+        <a th:href="@{/login}" class="btn btn-ghost btn-large">Already have one? Log in →</a>
+    </div>
+</section>
+
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <span class="nav-logo">Calendly<span style="color:var(--accent)">.</span></span>
+                <p>Scheduling software that respects everyone's time. Simple, fast, and designed for real humans.</p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Product</h4>
+                <ul>
+                    <li><a th:href="@{/features}">Features</a></li>
+                    <li><a th:href="@{/pricing}">Pricing</a></li>
+                    <li><a th:href="@{/integrations}">Integrations</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a th:href="@{/about}">About</a></li>
+                    <li><a th:href="@{/blog}">Blog</a></li>
+                    <li><a th:href="@{/careers}">Careers</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a th:href="@{/privacy}">Privacy policy</a></li>
+                    <li><a th:href="@{/terms}">Terms of service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span th:text="'© ' + ${currentYear} + ' Calendly. All rights reserved.'">© 2025 Calendly. All rights reserved.</span>
+            <span>Made with care ♥</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    /* Time slot click selection */
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.addEventListener('click', () => {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            slot.classList.add('selected');
+        });
+    });
+
+    /* Calendar day click */
+    document.querySelectorAll('.cal-day.available').forEach(day => {
+        day.addEventListener('click', () => {
+            document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('today'));
+            day.classList.add('today');
+        });
+    });
+</script>
+
+</body>
+</html>

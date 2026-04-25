@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+               background: #f3f4f6; margin: 0; padding: 2rem 1rem; color: #111827; }
+        .wrap { max-width: 560px; margin: 0 auto; }
+        .card { background: #fff; border-radius: 12px; overflow: hidden;
+                box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+        .header { background: #2c5fff; color: #fff; padding: 2rem; text-align: center; }
+        .header h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+        .header p  { font-size: .9rem; margin: .5rem 0 0; opacity: .85; }
+        .body { padding: 2rem; }
+        .greeting { font-size: 1rem; color: #374151; margin-bottom: 1.5rem; }
+        .detail-box { background: #f9fafb; border: 1px solid #e5e7eb;
+                      border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+        .row { display: flex; margin-bottom: .75rem; gap: 1rem; }
+        .row:last-child { margin-bottom: 0; }
+        .label { font-size: .78rem; font-weight: 600; color: #6b7280;
+                 text-transform: uppercase; letter-spacing: .05em; min-width: 90px; }
+        .value { font-size: .95rem; color: #111827; font-weight: 500; }
+        .cancel { border-top: 1px solid #e5e7eb; padding-top: 1.25rem; text-align: center; }
+        .cancel p { font-size: .875rem; color: #6b7280; margin-bottom: .75rem; }
+        .btn { display: inline-block; padding: .6rem 1.5rem; border: 1.5px solid #e5e7eb;
+               border-radius: 8px; color: #374151; text-decoration: none;
+               font-size: .875rem; font-weight: 600; background: #fff; }
+        .footer { text-align: center; padding: 1.25rem 2rem; font-size: .78rem;
+                  color: #9ca3af; border-top: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="header">
+            <h1>&#9998; Booking Updated</h1>
+            <p>Your meeting details have changed</p>
+        </div>
+        <div class="body">
+            <p class="greeting">
+                Hi <strong th:text="${recipientName}">Guest</strong>,<br>
+                Your booking has been updated. Here are the new details:
+            </p>
+            <div class="detail-box">
+                <div class="row">
+                    <span class="label">Event</span>
+                    <span class="value" th:text="${eventTitle}">Meeting</span>
+                </div>
+                <div class="row">
+                    <span class="label">Host</span>
+                    <span class="value" th:text="${hostName}">Host</span>
+                </div>
+                <div class="row">
+                    <span class="label">Date</span>
+                    <span class="value"
+                          th:text="${#temporals.format(booking.startTime, 'EEEE, MMMM d, yyyy')}">
+                        Monday, January 1, 2025
+                    </span>
+                </div>
+                <div class="row">
+                    <span class="label">Time</span>
+                    <span class="value"
+                          th:text="${#temporals.format(booking.startTime, 'h:mm a') + ' – ' + #temporals.format(booking.endTime, 'h:mm a')}">
+                        10:00 AM – 10:30 AM
+                    </span>
+                </div>
+                <div class="row" th:if="${booking.guestNotes}">
+                    <span class="label">Notes</span>
+                    <span class="value" th:text="${booking.guestNotes}">—</span>
+                </div>
+            </div>
+            <!-- Meeting link -->
+            <div th:if="${booking.eventType.meetingLink != null and !booking.eventType.meetingLink.isEmpty()}"
+                 style="background:#f0f4ff;border:1px solid #c7d7ff;border-radius:8px;
+                        padding:.9rem 1.2rem;margin-bottom:1.25rem;text-align:center;">
+                <div style="font-size:.72rem;font-weight:700;color:#3b5bdb;
+                            text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem;">
+                    Join meeting
+                </div>
+                <a th:href="${booking.eventType.meetingLink}"
+                   th:text="${booking.eventType.meetingLink}"
+                   style="color:#2c5fff;font-weight:600;font-size:.875rem;word-break:break-all;">
+                    https://meet.google.com/...
+                </a>
+            </div>
+
+            <div class="cancel">
+                <p>Need to cancel? No login required.</p>
+                <a th:href="${cancelLink}" class="btn">Cancel this booking</a>
+            </div>
+        </div>
+        <div class="footer">Sent by Calendly Clone</div>
+    </div>
+</div>
+</body>
+</html>

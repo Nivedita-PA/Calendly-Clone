@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Availability — Calendly Clone</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand { font-size: 1.2rem; font-weight: 700; color: #0069ff; text-decoration: none; }
+        .nav-right  { display: flex; align-items: center; gap: 1rem; }
+        .nav-right span { font-size: 0.875rem; color: #6b7280; }
+        .btn-nav {
+            font-size: 0.875rem; color: #374151; text-decoration: none;
+            padding: 0.4rem 0.9rem; border: 1.5px solid #e5e7eb;
+            border-radius: 6px; transition: background 0.15s; background: #fff; cursor: pointer;
+        }
+        .btn-nav:hover { background: #f3f4f6; }
+
+        .container { max-width: 680px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+        .page-header p  { font-size: 0.875rem; color: #6b7280; margin-top: 0.3rem; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 1.75rem;
+        }
+
+        .day-row {
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .day-row:last-child { border-bottom: none; }
+
+        .day-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .day-toggle input[type="checkbox"] {
+            width: 17px; height: 17px; accent-color: #0069ff; cursor: pointer; flex-shrink: 0;
+        }
+        .day-label { font-size: 0.9rem; font-weight: 600; color: #1f2937; }
+
+        .time-inputs {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .time-inputs input[type="time"] {
+            padding: 0.45rem 0.7rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 0.875rem;
+            color: #111827;
+            background: #fff;
+            width: 120px;
+        }
+        .time-inputs input[type="time"]:focus {
+            outline: none;
+            border-color: #0069ff;
+            box-shadow: 0 0 0 3px rgba(0,105,255,.12);
+        }
+        .time-inputs input[type="time"]:disabled {
+            background: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .time-sep { font-size: 0.8rem; color: #9ca3af; }
+        .day-unavailable { font-size: 0.8rem; color: #9ca3af; font-style: italic; }
+
+        .form-actions { margin-top: 1.75rem; display: flex; gap: 0.75rem; align-items: center; }
+        .btn-primary {
+            padding: 0.6rem 1.4rem;
+            background: #0069ff; color: #fff;
+            border: none; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .btn-primary:hover { background: #0057d8; }
+        .btn-secondary {
+            padding: 0.55rem 1.2rem;
+            background: #fff; color: #374151;
+            border: 1.5px solid #d1d5db; border-radius: 8px;
+            font-size: 0.875rem; font-weight: 600;
+            text-decoration: none; transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: #f3f4f6; }
+
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        @media (max-width: 520px) {
+            .day-row { grid-template-columns: 1fr; gap: 0.5rem; }
+            nav { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a class="nav-brand" href="/dashboard">Calendly</a>
+    <div class="nav-right">
+        <a href="/dashboard" class="btn-nav">Dashboard</a>
+        <span th:text="'Hi, ' + ${user.username}">Hi, user</span>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-nav">Sign out</button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <h1>Availability</h1>
+        <p>Set the days and hours when guests can book time with you.</p>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+    <!-- Timezone selector -->
+    <div class="card" style="margin-bottom:1.25rem;">
+        <form th:action="@{/availability/timezone}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                <div style="flex:1;min-width:200px;">
+                    <label style="display:block;font-size:0.825rem;font-weight:600;
+                                  color:#111827;margin-bottom:0.4rem;">
+                        Your timezone
+                    </label>
+                    <p style="font-size:0.78rem;color:#6b7280;margin-bottom:0.6rem;">
+                        Guests see available times converted to their local timezone.
+                        Your availability hours are interpreted in this timezone.
+                    </p>
+                    <select name="timezone"
+                            style="padding:0.5rem 0.75rem;border:1.5px solid #d1d5db;
+                                   border-radius:8px;font-size:0.875rem;width:100%;
+                                   max-width:340px;background:#fff;">
+                        <option th:each="tz : ${availableTimezones}"
+                                th:value="${tz}"
+                                th:text="${tz}"
+                                th:selected="${tz == currentTimezone}">
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary"
+                        style="white-space:nowrap;align-self:flex-end;">
+                    Save timezone
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <form th:action="@{/availability}" method="post" th:object="${availabilityForm}" id="availForm">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div th:each="entry, iStat : ${availabilityForm.days}">
+                <!-- Hidden field always submits dayOfWeek -->
+                <input type="hidden"
+                       th:name="'days[' + ${iStat.index} + '].dayOfWeek'"
+                       th:value="${entry.dayOfWeek}"/>
+
+                <div class="day-row">
+                    <!-- Toggle -->
+                    <label class="day-toggle">
+                        <input type="checkbox"
+                               th:name="'days[' + ${iStat.index} + '].enabled'"
+                               th:checked="${entry.enabled}"
+                               th:id="'chk-' + ${iStat.index}"
+                               onchange="toggleDay(this)"/>
+                        <span class="day-label" th:text="${#strings.capitalize(#strings.toLowerCase(entry.dayOfWeek))}">Monday</span>
+                    </label>
+
+                    <!-- Time range -->
+                    <div class="time-inputs" th:id="'times-' + ${iStat.index}">
+                        <input type="time"
+                               th:name="'days[' + ${iStat.index} + '].startTime'"
+                               th:value="${entry.startTime}"
+                               th:disabled="${!entry.enabled}"
+                               required/>
+                        <span class="time-sep">—</span>
+                        <input type="time"
+                               th:name="'days[' + ${iStat.index} + '].endTime'"
+                               th:value="${entry.endTime}"
+                               th:disabled="${!entry.enabled}"
+                               required/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save changes</button>
+                <a href="/dashboard" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+function toggleDay(checkbox) {
+    const idx    = checkbox.id.replace('chk-', '');
+    const row    = document.getElementById('times-' + idx);
+    const inputs = row.querySelectorAll('input[type="time"]');
+    inputs.forEach(inp => inp.disabled = !checkbox.checked);
+}
+</script>
+
+</body>
+</html>

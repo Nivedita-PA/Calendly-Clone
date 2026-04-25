@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Types</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial, sans-serif;
+            background:#f8f8f7;
+            color:#1a1a1a;
+        }
+
+        /* Navbar */
+        .navbar{
+            height:65px;
+            background:white;
+            border-bottom:1px solid #e5e5e5;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:0 24px;
+        }
+
+        .logo{
+            font-size:18px;
+            font-weight:700;
+            color:#0b5cff;
+        }
+
+        .page-text{
+            font-size:14px;
+            color:#777;
+        }
+
+        /* Main */
+        .container{
+            max-width:900px;
+            margin:50px auto;
+            padding:0 20px;
+        }
+
+        /* Header */
+        .page-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:24px;
+            gap:12px;
+        }
+
+        .title-wrap h1{
+            font-size:30px;
+            font-weight:700;
+            margin-bottom:6px;
+        }
+
+        .title-wrap p{
+            color:#666;
+            font-size:14px;
+        }
+
+        /* Buttons */
+        .btn{
+            border:none;
+            text-decoration:none;
+            cursor:pointer;
+            border-radius:10px;
+            padding:10px 16px;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        .btn-primary{
+            background:#0b5cff;
+            color:white;
+        }
+
+        .btn-primary:hover{
+            background:#0048d9;
+        }
+
+        .btn-edit{
+            background:#e8f0ff;
+            color:#0b5cff;
+        }
+
+        .btn-edit:hover{
+            background:#d9e7ff;
+        }
+
+        .btn-delete{
+            background:#fff1f1;
+            color:#dc2626;
+        }
+
+        .btn-delete:hover{
+            background:#ffe3e3;
+        }
+
+        /* Event Card */
+        .event-card{
+            background:white;
+            border:1px solid #e5e5e5;
+            border-radius:16px;
+            padding:22px;
+            margin-bottom:16px;
+            transition:0.2s;
+        }
+
+        .event-card:hover{
+            box-shadow:0 6px 14px rgba(0,0,0,0.05);
+            transform:translateY(-2px);
+        }
+
+        .event-top{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:16px;
+        }
+
+        .event-left{
+            display:flex;
+            gap:14px;
+            align-items:flex-start;
+        }
+
+        .color-dot{
+            width:14px;
+            height:14px;
+            border-radius:50%;
+            margin-top:7px;
+            flex-shrink:0;
+        }
+
+        .event-info h3{
+            font-size:22px;
+            margin-bottom:6px;
+        }
+
+        .meta{
+            font-size:14px;
+            color:#666;
+            margin-bottom:8px;
+        }
+
+        .slug-link{
+            color:#0b5cff;
+            font-size:14px;
+            text-decoration:none;
+        }
+
+        .slug-link:hover{
+            text-decoration:underline;
+        }
+
+        .actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+
+        .empty{
+            background:white;
+            border:1px solid #e5e5e5;
+            border-radius:16px;
+            padding:40px;
+            text-align:center;
+            color:#777;
+        }
+
+        .empty h3{
+            margin-bottom:8px;
+            font-size:22px;
+            color:#333;
+        }
+
+        @media (max-width:700px){
+
+            .page-header{
+                flex-direction:column;
+                align-items:flex-start;
+            }
+
+            .event-top{
+                flex-direction:column;
+            }
+
+            .actions{
+                width:100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="logo">Calendly</div>
+    <div class="page-text">Event Types</div>
+</div>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+
+        <div class="title-wrap">
+            <h1>Event Types</h1>
+            <p>Create and manage the meeting types guests can book.</p>
+        </div>
+
+        <a href="/event-types/new" class="btn btn-primary">
+            + New Event Type
+        </a>
+
+    </div>
+
+    <!-- Event List -->
+    <div th:if="${eventTypes != null and !eventTypes.isEmpty()}">
+
+        <div class="event-card"
+             th:each="event : ${eventTypes}">
+
+            <div class="event-top">
+
+                <div class="event-left">
+
+                    <div class="color-dot"
+                         th:style="'background:' + ${event.color}">
+                    </div>
+
+                    <div class="event-info">
+
+                        <h3 th:text="${event.title}">
+                            30 Minute Meeting
+                        </h3>
+
+                        <div class="meta">
+                            <span th:text="${event.durationMinutes} + ' min'">
+                                30 min
+                            </span>
+                            •
+                            <span th:text="${event.meetingType}">
+                                ONE_ON_ONE
+                            </span>
+                        </div>
+
+                        <a class="slug-link"
+                           th:href="@{'/book/' + ${user.profile.bookingPageSlug} + '/' + ${event.slug}}"
+                           target="_blank"
+                           th:text="'/book/' + ${user.profile.bookingPageSlug} + '/' + ${event.slug}">
+                            /book/john/meeting
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="actions">
+
+                    <a th:href="@{'/event-types/' + ${event.id} + '/edit'}"
+                       class="btn btn-edit">
+                        Edit
+                    </a>
+
+                    <form th:action="@{'/event-types/' + ${event.id} + '/delete'}"
+                          method="post"
+                          onsubmit="return confirm('Delete this event type?')">
+
+                        <button type="submit" class="btn btn-delete">
+                            Delete
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty"
+         th:if="${eventTypes == null or eventTypes.isEmpty()}">
+
+        <h3>No event types yet</h3>
+        <p style="margin-bottom:18px;">
+            Create your first event type so guests can book time with you.
+        </p>
+
+        <a href="/event-types/new" class="btn btn-primary">
+            + Create Event Type
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

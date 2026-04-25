@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${eventType.title} + ' — Calendly'">Book a meeting — Calendly</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:       #0d0f12;
+            --ink-2:     #3c4049;
+            --ink-3:     #7a808c;
+            --surface:   #ffffff;
+            --surface-2: #f4f4f1;
+            --accent:    #2c5fff;
+            --accent-dk: #1a3fcf;
+            --accent-lt: #e8eeff;
+            --border:    #e2e0dc;
+            --radius:    10px;
+            --radius-lg: 20px;
+            --font-head: 'DM Serif Display', Georgia, serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: var(--surface-2);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* ── Nav ── */
+        nav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo { font-family: var(--font-head); font-size: 1.3rem; }
+        .nav-logo span { color: var(--accent); }
+
+        /* ── Page layout ── */
+        .page {
+            max-width: 1020px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── Left info panel ── */
+        .info-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            position: sticky;
+            top: 24px;
+        }
+        .host-row {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 20px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .host-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--accent-lt); color: var(--accent);
+            font-weight: 600; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .host-name { font-size: 0.9rem; font-weight: 600; }
+        .host-slug { font-size: 0.75rem; color: var(--ink-3); margin-top: 2px; }
+        .event-title {
+            font-family: var(--font-head); font-size: 1.3rem;
+            margin-bottom: 14px; line-height: 1.25;
+        }
+        .meta-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+        .meta-item { display: flex; align-items: center; gap: 9px; font-size: 0.85rem; color: var(--ink-2); }
+        .meta-icon { width: 16px; height: 16px; color: var(--ink-3); flex-shrink: 0; }
+        .event-desc {
+            margin-top: 16px; padding-top: 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem; color: var(--ink-2); line-height: 1.7;
+        }
+
+        /* ── Right booking panel ── */
+        .booking-panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .booking-body { padding: 28px 32px; }
+        .form-heading {
+            font-family: var(--font-head); font-size: 1.25rem;
+            margin-bottom: 20px;
+        }
+        .alert-error {
+            background: #fcebeb; border: 1px solid #f7c1c1;
+            border-radius: var(--radius); padding: 11px 15px;
+            color: #791f1f; font-size: 0.875rem; margin-bottom: 20px;
+        }
+
+        /* ── Slot picker ── */
+        .slot-picker { margin-bottom: 24px; }
+
+        /* Timezone bar */
+        .tz-bar {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 0.75rem; color: var(--ink-3);
+            margin-bottom: 14px; flex-wrap: wrap;
+        }
+        .tz-bar svg { flex-shrink: 0; }
+        .tz-toggle-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--accent); font-size: 0.75rem; padding: 0;
+            font-family: var(--font-body);
+        }
+        .tz-sep { color: var(--border); }
+
+        /* Calendar + times side by side */
+        .picker-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        /* ── Calendar panel ── */
+        .cal-panel { padding: 20px; border-right: 1.5px solid var(--border); }
+
+        .cal-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .cal-nav-btn {
+            background: none; border: 1.5px solid var(--border);
+            border-radius: 8px; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--ink-2); transition: all .15s;
+            font-size: 0.85rem;
+        }
+        .cal-nav-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+        .cal-nav-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
+        .cal-month-label { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cal-day-header {
+            text-align: center; font-size: 0.7rem; font-weight: 600;
+            color: var(--ink-3); padding: 4px 0; text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .cal-day {
+            text-align: center; font-size: 0.82rem;
+            padding: 6px 4px; border-radius: 8px;
+            cursor: default; color: var(--ink-3);
+            line-height: 1;
+        }
+        .cal-day.has-slots {
+            color: var(--ink); font-weight: 600; cursor: pointer;
+            transition: background .12s, color .12s;
+        }
+        .cal-day.has-slots:hover { background: var(--accent-lt); color: var(--accent); }
+        .cal-day.selected { background: var(--accent) !important; color: #fff !important; }
+        .cal-day.today { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+        .cal-day.today.has-slots { color: var(--accent); }
+        .cal-day.today.selected { color: #fff; box-shadow: none; }
+        .cal-day.empty { visibility: hidden; }
+
+        /* ── Times panel ── */
+        .times-panel { padding: 20px; display: flex; flex-direction: column; }
+        .times-header {
+            font-size: 0.78rem; font-weight: 600; color: var(--ink-3);
+            text-transform: uppercase; letter-spacing: .06em;
+            margin-bottom: 12px;
+        }
+        .times-date-label {
+            font-size: 0.9rem; font-weight: 600; color: var(--ink);
+            margin-bottom: 12px;
+        }
+        .times-empty {
+            font-size: 0.85rem; color: var(--ink-3);
+            padding: 20px 0; text-align: center;
+        }
+        .times-list {
+            display: flex; flex-direction: column; gap: 8px;
+            max-height: 240px; overflow-y: auto;
+            padding-right: 4px;
+        }
+        .times-list::-webkit-scrollbar { width: 4px; }
+        .times-list::-webkit-scrollbar-track { background: transparent; }
+        .times-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .time-btn {
+            width: 100%; padding: 10px 14px;
+            background: #fff; border: 1.5px solid var(--border);
+            border-radius: var(--radius); cursor: pointer;
+            font-family: var(--font-body); font-size: 0.875rem;
+            font-weight: 500; color: var(--ink);
+            text-align: center; transition: all .15s;
+        }
+        .time-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-lt); }
+        .time-btn.selected {
+            background: var(--accent); border-color: var(--accent);
+            color: #fff; font-weight: 600;
+        }
+
+        /* ── Selected slot summary ── */
+        .selected-summary {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--accent-lt); border: 1.5px solid #c7d6fe;
+            border-radius: var(--radius); padding: 11px 14px;
+            font-size: 0.85rem; color: var(--accent-dk);
+            margin-bottom: 20px;
+        }
+        .selected-summary svg { flex-shrink: 0; }
+        .selected-summary strong { font-weight: 600; }
+        .clear-slot-btn {
+            margin-left: auto; background: none; border: none;
+            cursor: pointer; color: var(--ink-3); font-size: 0.78rem;
+            padding: 2px 6px; border-radius: 4px; transition: color .15s;
+            font-family: var(--font-body);
+            white-space: nowrap;
+        }
+        .clear-slot-btn:hover { color: #d32f2f; }
+
+        /* ── Form fields ── */
+        .form-group { margin-bottom: 18px; }
+        .form-label {
+            display: block; font-size: 0.8rem; font-weight: 600;
+            color: var(--ink); margin-bottom: 5px;
+        }
+        .form-label .req { color: var(--accent); }
+        .form-input, .form-textarea {
+            width: 100%; padding: 10px 13px;
+            border: 1.5px solid var(--border); border-radius: var(--radius);
+            font-family: var(--font-body); font-size: 0.875rem;
+            color: var(--ink); background: #fff;
+            transition: border-color .15s; outline: none;
+        }
+        .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-error {
+            font-size: 0.75rem; color: #d32f2f;
+            margin-top: 4px; display: block;
+        }
+
+        .form-footer {
+            margin-top: 24px; padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 11px 28px; border-radius: 999px;
+            font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; transition: all .2s; border: none;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-dk); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        /* Additional guests */
+        .btn-add-guest {
+            background: none; border: 1.5px dashed var(--border);
+            border-radius: var(--radius); padding: 8px 14px;
+            font-family: var(--font-body); font-size: 0.82rem;
+            color: var(--accent); cursor: pointer; width: 100%;
+            text-align: left; transition: border-color .15s, background .15s; margin-top: 6px;
+        }
+        .btn-add-guest:hover { border-color: var(--accent); background: var(--accent-lt); }
+        .guest-row {
+            display: grid; grid-template-columns: 1fr 1fr auto;
+            gap: 8px; margin-bottom: 6px; align-items: center;
+        }
+        .btn-remove-guest {
+            background: none; border: none; cursor: pointer;
+            color: var(--ink-3); font-size: 1rem; padding: 4px 8px;
+            border-radius: 6px; line-height: 1;
+        }
+        .btn-remove-guest:hover { color: #d32f2f; background: #fcebeb; }
+
+        /* ── Responsive ── */
+        @media (max-width: 820px) {
+            .page { grid-template-columns: 1fr; }
+            .info-panel { position: static; }
+        }
+        @media (max-width: 620px) {
+            .picker-body { grid-template-columns: 1fr; }
+            .cal-panel { border-right: none; border-bottom: 1.5px solid var(--border); }
+            .booking-body { padding: 20px; }
+            .guest-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+    <span style="font-size:.8rem; color:var(--ink-3);">Powered by Calendly</span>
+</nav>
+
+<div class="page">
+
+    <!-- ── Left: host + event info ── -->
+    <aside class="info-panel">
+        <div class="host-row">
+            <div class="host-avatar"
+                 th:text="${#strings.substring(profile.displayName, 0, 1)}">A</div>
+            <div>
+                <div class="host-name" th:text="${profile.displayName}">Aarav Kumar</div>
+                <div class="host-slug"
+                     th:text="'calendly.com/' + ${profile.bookingPageSlug}">
+                    calendly.com/aarav
+                </div>
+            </div>
+        </div>
+
+        <div class="event-title" th:text="${eventType.title}">30-min intro call</div>
+
+        <ul class="meta-list">
+            <li class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span th:text="${eventType.durationMinutes} + ' minutes'">30 minutes</span>
+            </li>
+            <li class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <span th:if="${eventType.meetingLink != null and !eventType.meetingLink.isEmpty()}">
+                    <a th:href="${eventType.meetingLink}" style="color:var(--accent);">Video call</a>
+                </span>
+                <span th:unless="${eventType.meetingLink != null and !eventType.meetingLink.isEmpty()}">Video call</span>
+            </li>
+            <li class="meta-item"
+                th:if="${eventType.bufferAfter > 0 or eventType.bufferBefore > 0}">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span th:text="${eventType.bufferBefore} + ' min buffer before · '
+                              + ${eventType.bufferAfter} + ' min after'">Buffer</span>
+            </li>
+        </ul>
+
+        <p class="event-desc"
+           th:if="${eventType.description != null and !eventType.description.isEmpty()}"
+           th:text="${eventType.description}"></p>
+    </aside>
+
+    <!-- ── Right: booking form ── -->
+    <div class="booking-panel">
+        <div class="booking-body">
+
+            <div class="form-heading">Book your appointment</div>
+
+            <div class="alert-error" th:if="${slotError != null}" th:text="${slotError}"></div>
+
+            <form th:action="@{/book/{profileSlug}/{eventSlug}
+                             (profileSlug=${profile.bookingPageSlug},
+                              eventSlug=${eventType.slug})}"
+                  th:object="${bookingForm}"
+                  method="post"
+                  id="bookingForm">
+
+                <!-- Hidden field that carries the selected slot value -->
+                <input type="hidden" name="startTime" id="startTime"/>
+                <span class="form-error"
+                      th:if="${#fields.hasErrors('startTime')}"
+                      th:errors="*{startTime}"
+                      style="margin-bottom:10px;display:block;"></span>
+
+                <!-- ── Date & time picker ── -->
+                <div class="slot-picker">
+                    <div class="tz-bar">
+                        <span id="tz-label">Select a convenient time</span>
+                    </div>
+
+                    <!-- Calendar + time slots -->
+                    <div class="picker-body">
+
+                        <!-- Calendar -->
+                        <div class="cal-panel">
+                            <div class="cal-nav">
+                                <button type="button" class="cal-nav-btn" id="cal-prev">&#8592;</button>
+                                <span class="cal-month-label" id="cal-month-label">Loading…</span>
+                                <button type="button" class="cal-nav-btn" id="cal-next">&#8594;</button>
+                            </div>
+                            <div class="cal-grid" id="cal-grid"></div>
+                        </div>
+
+                        <!-- Time slots for selected date -->
+                        <div class="times-panel" id="times-panel">
+                            <div class="times-header">Available times</div>
+                            <div class="times-date-label" id="times-date-label" style="display:none"></div>
+                            <div class="times-empty" id="times-empty">← Select a date</div>
+                            <div class="times-list" id="times-list" style="display:none"></div>
+                        </div>
+
+                    </div><!-- /picker-body -->
+                </div><!-- /slot-picker -->
+
+                <!-- Selected slot summary (shown after picking a time) -->
+                <div class="selected-summary" id="selected-summary" style="display:none">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="selected-summary-text"></span>
+                    <button type="button" class="clear-slot-btn" onclick="clearSlot()">Change</button>
+                </div>
+
+                <!-- Guest name -->
+                <div class="form-group">
+                    <label class="form-label" for="guestName">
+                        Name <span class="req">*</span>
+                    </label>
+                    <input class="form-input" type="text" id="guestName"
+                           th:field="*{guestName}" placeholder="Your full name"
+                           autocomplete="name"/>
+                    <span class="form-error"
+                          th:if="${#fields.hasErrors('guestName')}"
+                          th:errors="*{guestName}"></span>
+                </div>
+
+                <!-- Guest email -->
+                <div class="form-group">
+                    <label class="form-label" for="guestEmail">
+                        Email <span class="req">*</span>
+                    </label>
+                    <input class="form-input" type="email" id="guestEmail"
+                           th:field="*{guestEmail}" placeholder="your@email.com"
+                           autocomplete="email"/>
+                    <span class="form-error"
+                          th:if="${#fields.hasErrors('guestEmail')}"
+                          th:errors="*{guestEmail}"></span>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label" for="guestNotes">
+                        Anything to share?
+                        <span style="color:var(--ink-3);font-weight:400">(optional)</span>
+                    </label>
+                    <textarea class="form-textarea" id="guestNotes"
+                              th:field="*{guestNotes}"
+                              placeholder="Share anything that will help prepare for our meeting…"></textarea>
+                </div>
+
+                <!-- Additional guests -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Additional attendees
+                        <span style="color:var(--ink-3);font-weight:400">(optional)</span>
+                    </label>
+                    <div id="guests-container"></div>
+                    <button type="button" class="btn-add-guest" onclick="addGuest()">
+                        + Add another attendee
+                    </button>
+                </div>
+
+                <div class="form-footer">
+                    <button class="btn btn-primary" type="submit" id="submit-btn">
+                        Confirm booking
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+// ── Data from server ─────────────────────────────────────────
+const SLOTS        = /*[[${slotsJson}]]*/ [];
+const HOST_TZ      = /*[[${hostTimezone}]]*/ 'UTC';
+const PRE_SELECTED = /*[[${bookingForm.startTime != null ? #temporals.format(bookingForm.startTime, 'yyyy-MM-dd''T''HH:mm:ss') : ''}]]*/ '';
+
+console.log('[booking] SLOTS loaded:', SLOTS.length, SLOTS);
+console.log('[booking] HOST_TZ:', HOST_TZ);
+
+const GUEST_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+let activeDisplayTz = HOST_TZ;
+
+// ── Helpers ──────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+const DAYS   = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+function fmtTz(tz) { return tz.replace(/_/g,' ').split('/').pop(); }
+
+// Reliable date-key: en-US gives "MM/DD/YYYY", slice into "YYYY-MM-DD"
+function toDateKey(utcMs, tz) {
+    const s = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date(utcMs));
+    return s.slice(6) + '-' + s.slice(0, 2) + '-' + s.slice(3, 5);
+}
+
+function fmtTime(utcMs, tz) {
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true
+    }).format(new Date(utcMs));
+}
+
+function fmtDateLong(utcMs, tz) {
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, weekday: 'long', month: 'long', day: 'numeric'
+    }).format(new Date(utcMs));
+}
+
+function fmtDateShort(utcMs, tz) {
+    return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, weekday: 'short', month: 'short', day: 'numeric'
+    }).format(new Date(utcMs));
+}
+
+// ── Group slots by date key ───────────────────────────────────
+function groupByDate(tz) {
+    const groups = {};
+    SLOTS.forEach(slot => {
+        const key = toDateKey(slot.utcMs, tz);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(slot);
+    });
+    return groups;
+}
+
+// ── Calendar state ───────────────────────────────────────────
+let calYear, calMonth;
+let selectedDateKey  = null;
+let selectedSlotValue = null;
+
+function initCalendar() {
+    const slotDates = Object.keys(groupByDate(activeDisplayTz)).sort();
+    const todayKey  = toDateKey(Date.now(), activeDisplayTz);
+    const startDate = slotDates.length > 0 ? slotDates[0] : todayKey;
+    calYear  = parseInt(startDate.slice(0, 4));
+    calMonth = parseInt(startDate.slice(5, 7)) - 1;
+}
+
+function renderCalendar() {
+    const groups   = groupByDate(activeDisplayTz);
+    const todayKey = toDateKey(Date.now(), activeDisplayTz);
+    const allKeys  = Object.keys(groups).sort();
+
+    document.getElementById('cal-month-label').textContent =
+        MONTHS[calMonth] + ' ' + calYear;
+
+    const curMonthStr    = calYear + '-' + String(calMonth + 1).padStart(2, '0');
+    const firstSlotMonth = allKeys.length ? allKeys[0].slice(0, 7) : null;
+    const lastSlotMonth  = allKeys.length ? allKeys[allKeys.length - 1].slice(0, 7) : null;
+    document.getElementById('cal-prev').disabled = !firstSlotMonth || curMonthStr <= firstSlotMonth;
+    document.getElementById('cal-next').disabled = !lastSlotMonth  || curMonthStr >= lastSlotMonth;
+
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+
+    DAYS.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'cal-day-header';
+        h.textContent = d;
+        grid.appendChild(h);
+    });
+
+    const firstDate = new Date(calYear, calMonth, 1);
+    let startOffset = firstDate.getDay();
+    startOffset = startOffset === 0 ? 6 : startOffset - 1;
+
+    for (let i = 0; i < startOffset; i++) {
+        const e = document.createElement('div');
+        e.className = 'cal-day empty';
+        grid.appendChild(e);
+    }
+
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+        const key  = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.textContent = d;
+
+        if (groups[key]) {
+            cell.classList.add('has-slots');
+            cell.addEventListener('click', () => selectDate(key));
+        }
+        if (key === todayKey)       cell.classList.add('today');
+        if (key === selectedDateKey) cell.classList.add('selected');
+
+        grid.appendChild(cell);
+    }
+}
+
+// ── Select a date → show time slots ──────────────────────────
+function selectDate(dateKey) {
+    selectedDateKey = dateKey;
+    renderCalendar(); // re-render to highlight selected day
+
+    const groups = groupByDate(activeDisplayTz);
+    const slots  = groups[dateKey] || [];
+    if (slots.length === 0) return;
+
+    document.getElementById('times-date-label').textContent =
+        fmtDateLong(slots[0].utcMs, activeDisplayTz);
+    document.getElementById('times-date-label').style.display = 'block';
+    document.getElementById('times-empty').style.display = 'none';
+
+    const list = document.getElementById('times-list');
+    list.style.display = 'flex';
+    list.innerHTML = '';
+
+    slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'time-btn';
+        if (slot.value === selectedSlotValue) btn.classList.add('selected');
+        btn.textContent = fmtTime(slot.utcMs, activeDisplayTz);
+        btn.addEventListener('click', () => selectSlot(slot, btn));
+        list.appendChild(btn);
+    });
+}
+
+// ── Select a specific time slot ───────────────────────────────
+function selectSlot(slot, btn) {
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    selectedSlotValue = slot.value;
+    document.getElementById('startTime').value = slot.value;
+
+    const label  = fmtDateShort(slot.utcMs, activeDisplayTz) + ' at ' + fmtTime(slot.utcMs, activeDisplayTz);
+    const tzNote = activeDisplayTz !== HOST_TZ ? ' (' + fmtTz(activeDisplayTz) + ')' : '';
+    document.getElementById('selected-summary-text').innerHTML = '<strong>' + label + '</strong>' + tzNote;
+    document.getElementById('selected-summary').style.display = 'flex';
+}
+
+function clearSlot() {
+    selectedSlotValue = null;
+    document.getElementById('startTime').value = '';
+    document.getElementById('selected-summary').style.display = 'none';
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+}
+
+// ── Month navigation ──────────────────────────────────────────
+document.getElementById('cal-prev').addEventListener('click', function() {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', function() {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+});
+
+// ── Timezone toggle ───────────────────────────────────────────
+// function updateTzBar() {
+//     const usingGuest = activeDisplayTz === GUEST_TZ;
+//     document.getElementById('tz-label').textContent =
+//         fmtTz(activeDisplayTz) + (usingGuest ? ' (your timezone)' : ' (host timezone)');
+//     document.getElementById('tz-toggle').textContent = usingGuest
+//         ? 'Use host time (' + fmtTz(HOST_TZ) + ')'
+//         : 'Use your time (' + fmtTz(GUEST_TZ) + ')';
+// }
+function updateTzBar() {
+    document.getElementById('tz-label').textContent =
+        'Select a convenient time';
+}
+
+// document.getElementById('tz-toggle').addEventListener('click', function() {
+//     activeDisplayTz = activeDisplayTz === GUEST_TZ ? HOST_TZ : GUEST_TZ;
+//     selectedDateKey  = null;
+//     clearSlot();
+//     initCalendar();
+//     renderCalendar();
+//     document.getElementById('times-date-label').style.display = 'none';
+//     document.getElementById('times-empty').style.display = 'block';
+//     document.getElementById('times-list').style.display = 'none';
+//     document.getElementById('times-empty').textContent = '← Select a date';
+//     updateTzBar();
+// });
+//
+// if (HOST_TZ === GUEST_TZ) {
+//     document.getElementById('tz-toggle').style.display = 'none';
+// }
+
+// ── Init ──────────────────────────────────────────────────────
+if (SLOTS.length === 0) {
+    document.getElementById('times-empty').textContent = 'No available times in the next 30 days.';
+    document.getElementById('cal-prev').disabled = true;
+    document.getElementById('cal-next').disabled = true;
+}
+initCalendar();
+renderCalendar();
+updateTzBar();
+
+// Restore pre-selected slot after a form validation error
+if (PRE_SELECTED) {
+    const match = SLOTS.find(s => s.value === PRE_SELECTED);
+    if (match) {
+        selectedSlotValue = PRE_SELECTED;
+        document.getElementById('startTime').value = PRE_SELECTED;
+        selectedDateKey = toDateKey(match.utcMs, activeDisplayTz);
+        // Navigate to the correct month before rendering
+        calYear  = parseInt(selectedDateKey.slice(0, 4));
+        calMonth = parseInt(selectedDateKey.slice(5, 7)) - 1;
+        selectDate(selectedDateKey); // renders calendar + time buttons with selection
+    }
+}
+
+// ── Additional guests ─────────────────────────────────────────
+let guestCount = 0;
+function addGuest(name, email) {
+    const container = document.getElementById('guests-container');
+    const idx = guestCount++;
+    const row = document.createElement('div');
+    row.className = 'guest-row';
+    row.innerHTML =
+        '<input type="text"  class="form-input" placeholder="Name"'
+      + ' name="additionalGuests[' + idx + '].name"'
+      + ' value="' + (name  || '') + '"/>'
+      + '<input type="email" class="form-input" placeholder="Email"'
+      + ' name="additionalGuests[' + idx + '].email"'
+      + ' value="' + (email || '') + '"/>'
+      + '<button type="button" class="btn-remove-guest"'
+      + ' onclick="this.parentElement.remove()" title="Remove">&#x2715;</button>';
+    container.appendChild(row);
+}
+/*]]>*/
+</script>
+</body>
+</html>

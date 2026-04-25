@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${profile.displayName} + ' — Book a meeting'">Book a meeting</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --ink:       #0d0f12;
+            --ink-2:     #3c4049;
+            --ink-3:     #7a808c;
+            --surface:   #ffffff;
+            --surface-2: #f4f4f1;
+            --accent:    #2c5fff;
+            --accent-dk: #1a3fcf;
+            --accent-lt: #e8eeff;
+            --border:    #e2e0dc;
+            --radius:    12px;
+            --radius-lg: 20px;
+            --font-head: 'DM Serif Display', Georgia, serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--ink);
+            background: var(--surface-2);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Nav ── */
+        nav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            color: var(--ink);
+            text-decoration: none;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        /* ── Page ── */
+        .page {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 48px 20px 80px;
+        }
+
+        /* ── Host card ── */
+        .host-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px 28px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .host-avatar {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            background: var(--accent-lt);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .host-name {
+            font-family: var(--font-head);
+            font-size: 1.6rem;
+            color: var(--ink);
+            margin-bottom: 6px;
+        }
+        .host-slug {
+            font-size: 0.85rem;
+            color: var(--ink-3);
+        }
+
+        /* ── Section heading ── */
+        .section-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 12px;
+        }
+
+        /* ── Event type list ── */
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .event-item {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+            color: inherit;
+            transition: box-shadow .15s, transform .15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .event-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--color, var(--accent));
+        }
+        .event-item:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,.08);
+            transform: translateY(-1px);
+        }
+
+        .event-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--color, var(--accent));
+            flex-shrink: 0;
+        }
+
+        .event-info { flex: 1; }
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+        .event-meta {
+            font-size: 0.82rem;
+            color: var(--ink-3);
+        }
+
+        .event-arrow {
+            color: var(--ink-3);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            background: #fff;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--ink-3);
+        }
+        .empty-state h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; color: var(--ink-2); }
+        .empty-state p  { font-size: 0.875rem; }
+
+        /* ── Footer ── */
+        .page-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.78rem;
+            color: var(--ink-3);
+        }
+        .page-footer a { color: var(--accent); text-decoration: none; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            nav { padding: 0 16px; }
+            .page { padding: 24px 16px 60px; }
+            .host-card { padding: 28px 20px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+    <span style="font-size:.8rem; color:var(--ink-3);">Powered by Calendly</span>
+</nav>
+
+<!-- Page -->
+<div class="page">
+
+    <!-- Host card -->
+    <div class="host-card">
+        <div class="host-avatar"
+             th:text="${#strings.substring(profile.displayName, 0, 1)}">A</div>
+        <div class="host-name" th:text="${profile.displayName}">Aarav Kumar</div>
+        <div class="host-slug"
+             th:text="'calendly.com/' + ${profile.bookingPageSlug}">
+            calendly.com/aarav
+        </div>
+    </div>
+
+    <!-- Event type list -->
+    <div class="section-label">Choose an event type</div>
+
+    <div th:if="${eventTypes.empty}" class="empty-state">
+        <h3>No event types available</h3>
+        <p>This host hasn't set up any event types yet.</p>
+    </div>
+
+    <div th:unless="${eventTypes.empty}" class="event-list">
+        <a th:each="et : ${eventTypes}"
+           th:href="@{'/book/' + ${profile.bookingPageSlug} + '/' + ${et.slug}}"
+           class="event-item"
+           th:style="'--color:' + ${et.color}">
+
+            <div class="event-dot" th:style="'background:' + ${et.color}"></div>
+
+            <div class="event-info">
+                <div class="event-title" th:text="${et.title}">30-min intro call</div>
+                <div class="event-meta"
+                     th:text="${et.durationMinutes} + ' min · Video call'">
+                    30 min · Video call
+                </div>
+            </div>
+
+            <div class="event-arrow">›</div>
+        </a>
+    </div>
+
+    <div class="page-footer">
+        <a href="/">Powered by Calendly Clone</a>
+    </div>
+</div>
+
+</body>
+</html>

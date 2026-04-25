@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family: Arial, sans-serif;
+            background:#f8f8f7;
+            color:#1a1a1a;
+        }
+
+        /* Top Navbar */
+        .navbar{
+            height:65px;
+            background:white;
+            border-bottom:1px solid #e5e5e5;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:0 24px;
+        }
+
+        .logo{
+            font-size:18px;
+            font-weight:700;
+            color:#0b5cff;
+        }
+
+        .powered{
+            font-size:14px;
+            color:#777;
+        }
+
+        /* Main Container */
+        .container{
+            max-width:760px;
+            margin:50px auto;
+        }
+
+        /* Profile Card */
+        .profile-card{
+            background:white;
+            border:1px solid #e6e6e6;
+            border-radius:18px;
+            padding:32px;
+            text-align:center;
+            margin-bottom:28px;
+        }
+
+        .avatar{
+            width:70px;
+            height:70px;
+            border-radius:50%;
+            background:#e8edff;
+            color:#245bff;
+            font-size:32px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 16px;
+            font-weight:bold;
+        }
+
+        .profile-name{
+            font-size:30px;
+            font-weight:700;
+            margin-bottom:8px;
+        }
+
+        .profile-email{
+            color:#666;
+            font-size:15px;
+        }
+
+        /* Section Title */
+        .section-title{
+            font-size:14px;
+            letter-spacing:1px;
+            color:#6d7280;
+            font-weight:700;
+            margin-bottom:16px;
+        }
+
+        /* Contact Card */
+        .contact-card{
+            background:white;
+            border:1px solid #e5e5e5;
+            border-radius:14px;
+            padding:18px 20px;
+            margin-bottom:14px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            transition:0.2s;
+        }
+
+        .contact-card:hover{
+            box-shadow:0 4px 12px rgba(0,0,0,0.06);
+            transform:translateY(-2px);
+        }
+
+        .left{
+            display:flex;
+            align-items:center;
+            gap:14px;
+        }
+
+        .dot{
+            width:12px;
+            height:12px;
+            border-radius:50%;
+            background:#0b5cff;
+        }
+
+        .contact-info h3{
+            font-size:20px;
+            margin-bottom:4px;
+        }
+
+        .contact-info p{
+            color:#666;
+            font-size:14px;
+        }
+
+        .arrow{
+            color:#888;
+            font-size:22px;
+        }
+
+        /* Empty State */
+        .empty{
+            background:white;
+            padding:30px;
+            border-radius:14px;
+            text-align:center;
+            color:#777;
+            border:1px solid #e5e5e5;
+        }
+
+        /* Buttons */
+        .actions{
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+
+        .btn{
+            border:none;
+            padding:8px 14px;
+            border-radius:8px;
+            font-size:14px;
+            font-weight:600;
+            cursor:pointer;
+            text-decoration:none;
+        }
+
+        .btn-edit{
+            background:#e8f0ff;
+            color:#0b5cff;
+        }
+
+        .btn-edit:hover{
+            background:#d9e7ff;
+        }
+
+        .btn-delete{
+            background:#fff1f1;
+            color:#dc2626;
+        }
+
+        .btn-delete:hover{
+            background:#ffe3e3;
+        }
+
+        /* Section Header */
+        .section-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:16px;
+        }
+
+        /* Add Contact Button */
+        .add-btn{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:#0b5cff;
+            color:white;
+            text-decoration:none;
+            padding:10px 16px;
+            border-radius:10px;
+            font-size:14px;
+            font-weight:700;
+            transition:0.2s;
+        }
+
+        .add-btn:hover{
+            background:#0048d9;
+        }
+
+        .plus{
+            font-size:18px;
+            line-height:1;
+            font-weight:700;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="logo">Calendly</div>
+    <div class="powered">Contacts</div>
+</div>
+
+<div class="container">
+
+    <!-- Logged in User Card -->
+    <div class="profile-card">
+        <div class="avatar"
+             th:text="${#strings.substring(user.username,0,1).toUpperCase()}">N</div>
+
+        <div class="profile-name" th:text="${user.username}">Nivedita</div>
+
+        <div class="profile-email" th:text="${user.email}">
+            demo@email.com
+        </div>
+    </div>
+
+    <div class="section-header">
+
+        <div class="section-title">ALL CONTACTS</div>
+
+        <a href="/contacts/add" class="add-btn">
+            <span class="plus">+</span>
+            Add Contact
+        </a>
+
+    </div>
+
+<!--     Contact List -->
+    <div th:if="${contacts != null and !contacts.isEmpty()}">
+
+        <div class="contact-card"
+             th:each="contact : ${contacts}">
+
+            <div class="left">
+                <div class="dot"></div>
+
+                <div class="contact-info">
+                    <h3 th:text="${contact.name}">John Doe</h3>
+                    <p th:text="${contact.email}">john@gmail.com</p>
+
+                    <div style="margin-top:6px;font-size:13px;color:#666;line-height:1.5;">
+                        <div>
+                            Upcoming:
+                            <span th:text="${contact.upcomingBooking != null ?
+                              #temporals.format(contact.upcomingBooking,'MMM d, yyyy h:mm a') : '-'}">-</span>
+                        </div>
+
+                        <div>
+                            Last:
+                            <span th:text="${contact.lastBooking != null ?
+                              #temporals.format(contact.lastBooking,'MMM d, yyyy h:mm a') : '-'}">-</span>
+                        </div>
+                </div>
+            </div>
+
+            <div class="arrow">›</div>
+
+            <div class="actions">
+
+                <a th:href="@{'/contacts/' + ${contact.id} + '/edit'}"
+                   class="btn btn-edit">
+                    Edit
+                </a>
+
+                <form th:action="@{'/remove/' + ${contact.id}}"
+                      method="post"
+                      onsubmit="return confirm('Delete this contact?')">
+
+                    <button type="submit" class="btn btn-delete">
+                        Delete
+                    </button>
+                </form>
+
+                <a th:href="@{'event-types/showEvents/' + ${contact.id}}"
+                   class="btn btn-edit">
+                    Book
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty"
+         th:if="${contacts == null or contacts.isEmpty()}">
+        No contacts found.
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Edit: ' + ${eventType.title} + ' — Calendly'">Edit booking — Calendly</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --ink: #0d0f12; --ink-2: #3c4049; --ink-3: #7a808c;
+            --surface: #ffffff; --surface-2: #f4f4f1;
+            --accent: #2c5fff; --accent-dk: #1a3fcf; --accent-lt: #e8eeff;
+            --border: #e2e0dc; --radius: 12px; --radius-lg: 20px;
+            --font-head: 'DM Serif Display', Georgia, serif;
+            --font-body: 'DM Sans', sans-serif;
+        }
+        body { font-family: var(--font-body); color: var(--ink);
+               background: var(--surface-2); min-height: 100vh;
+               -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; }
+        nav { background: #fff; border-bottom: 1px solid var(--border);
+              padding: 0 40px; height: 60px; display: flex;
+              align-items: center; justify-content: space-between; }
+        .nav-logo { font-family: var(--font-head); font-size: 1.3rem; }
+        .nav-logo span { color: var(--accent); }
+        .page { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px;
+                display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+
+        /* Left info panel */
+        .info-panel { background: #fff; border: 1px solid var(--border);
+                      border-radius: var(--radius-lg); padding: 32px 28px;
+                      position: sticky; top: 24px; }
+        .host-row { display: flex; align-items: center; gap: 14px;
+                    margin-bottom: 24px; padding-bottom: 24px;
+                    border-bottom: 1px solid var(--border); }
+        .host-avatar { width: 48px; height: 48px; border-radius: 50%;
+                       background: var(--accent-lt); color: var(--accent);
+                       font-weight: 600; font-size: 1.1rem; display: flex;
+                       align-items: center; justify-content: center; flex-shrink: 0; }
+        .host-name { font-size: .95rem; font-weight: 600; }
+        .host-slug { font-size: .78rem; color: var(--ink-3); margin-top: 2px; }
+        .event-title { font-family: var(--font-head); font-size: 1.4rem;
+                       margin-bottom: 16px; line-height: 1.2; }
+        .meta-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .meta-item { display: flex; align-items: center; gap: 10px;
+                     font-size: .875rem; color: var(--ink-2); }
+        .meta-icon { width: 18px; height: 18px; color: var(--ink-3); flex-shrink: 0; }
+        .event-desc { margin-top: 20px; padding-top: 20px;
+                      border-top: 1px solid var(--border);
+                      font-size: .875rem; color: var(--ink-2); line-height: 1.7; }
+
+        /* Current booking banner */
+        .current-booking {
+            background: var(--accent-lt); border: 1px solid #b5caff;
+            border-radius: var(--radius); padding: 14px 18px; margin-bottom: 24px;
+            font-size: .875rem;
+        }
+        .current-booking .lbl { font-size: .72rem; font-weight: 600;
+                                 text-transform: uppercase; letter-spacing: .06em;
+                                 color: var(--accent); margin-bottom: 4px; }
+        .current-booking .val { font-weight: 500; color: var(--ink); }
+
+        /* Right panel */
+        .booking-panel { background: #fff; border: 1px solid var(--border);
+                         border-radius: var(--radius-lg); overflow: hidden; }
+        .booking-body { padding: 32px; }
+        .form-heading { font-family: var(--font-head); font-size: 1.3rem;
+                        color: var(--ink); margin-bottom: 6px; }
+        .form-subheading { font-size: .85rem; color: var(--ink-3); margin-bottom: 28px; }
+
+        /* Form */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: .825rem; font-weight: 600;
+                      color: var(--ink); margin-bottom: 6px; }
+        .form-label .req { color: var(--accent); }
+        .form-input, .form-textarea, select.form-input {
+            width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+            border-radius: var(--radius); font-family: var(--font-body);
+            font-size: .9rem; color: var(--ink); background: #fff;
+            transition: border-color .15s; outline: none; appearance: none;
+        }
+        .form-input:focus, .form-textarea:focus, select.form-input:focus { border-color: var(--accent); }
+        .form-textarea { resize: vertical; min-height: 90px; }
+        .form-error { font-size: .78rem; color: #d32f2f; margin-top: 5px; display: block; }
+        .select-wrap { position: relative; }
+        .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%;
+                              transform: translateY(-50%); color: var(--ink-3);
+                              pointer-events: none; font-size: .85rem; }
+
+        /* Additional guests */
+        .btn-add-guest { background: none; border: 1.5px dashed var(--border);
+                         border-radius: var(--radius); padding: 9px 16px;
+                         font-family: var(--font-body); font-size: .85rem;
+                         color: var(--accent); cursor: pointer; width: 100%;
+                         text-align: left; transition: border-color .15s, background .15s;
+                         margin-top: 8px; }
+        .btn-add-guest:hover { border-color: var(--accent); background: var(--accent-lt); }
+        .guest-row { display: grid; grid-template-columns: 1fr 1fr auto;
+                     gap: 8px; margin-bottom: 8px; align-items: center; }
+        .guest-row .form-input { margin: 0; }
+        .btn-remove-guest { background: none; border: none; cursor: pointer;
+                            color: var(--ink-3); font-size: 1.1rem; padding: 4px 8px;
+                            border-radius: 6px; line-height: 1; }
+        .btn-remove-guest:hover { color: #d32f2f; background: #fcebeb; }
+
+        .alert-error { background: #fcebeb; border: 1px solid #f7c1c1;
+                       border-radius: var(--radius); padding: 12px 16px;
+                       color: #791f1f; font-size: .875rem; margin-bottom: 24px; }
+        .form-footer { margin-top: 28px; padding-top: 24px;
+                       border-top: 1px solid var(--border);
+                       display: flex; gap: 12px; align-items: center; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 11px 28px;
+               border-radius: 999px; font-family: var(--font-body); font-size: .9rem;
+               font-weight: 500; cursor: pointer; transition: all .2s; border: none; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-dk); transform: translateY(-1px); }
+        .btn-ghost { background: transparent; color: var(--ink-2);
+                     border: 1.5px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--ink-3); }
+
+        @media (max-width: 700px) {
+            .page { grid-template-columns: 1fr; }
+            .info-panel { position: static; }
+            .booking-body { padding: 20px; }
+            .guest-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a th:href="@{/}" class="nav-logo">Calendly<span>.</span></a>
+    <span style="font-size:.8rem;color:var(--ink-3);">Powered by Calendly</span>
+</nav>
+
+<div class="page">
+
+    <!-- Left: event info -->
+    <aside class="info-panel">
+        <div class="host-row">
+            <div class="host-avatar"
+                 th:text="${#strings.substring(profile.displayName, 0, 1)}">A</div>
+            <div>
+                <div class="host-name" th:text="${profile.displayName}">Host</div>
+                <div class="host-slug"
+                     th:text="'calendly.com/' + ${profile.bookingPageSlug}">
+                    calendly.com/host
+                </div>
+            </div>
+        </div>
+
+        <div class="event-title" th:text="${eventType.title}">30-min intro call</div>
+
+        <ul class="meta-list">
+            <li class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span th:text="${eventType.durationMinutes} + ' minutes'">30 minutes</span>
+            </li>
+            <li class="meta-item">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8">
+                    <polygon points="23 7 16 12 23 17 23 7"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                <span>Video call</span>
+            </li>
+        </ul>
+
+        <p class="event-desc" th:if="${eventType.description != null}"
+           th:text="${eventType.description}"></p>
+    </aside>
+
+    <!-- Right: edit form -->
+    <div class="booking-panel">
+        <div class="booking-body">
+
+            <div class="form-heading">Edit your booking</div>
+            <div class="form-subheading">
+                Update your time slot, details, or attendees below.
+            </div>
+
+            <!-- Current booking summary -->
+            <div class="current-booking">
+                <div class="lbl">Current booking</div>
+                <div class="val"
+                     th:text="${#temporals.format(booking.startTime, 'EEE, MMM d yyyy')} + ' at ' + ${#temporals.format(booking.startTime, 'h:mm a')}">
+                    Mon, Apr 14 2025 at 10:00 AM
+                </div>
+            </div>
+
+            <div class="alert-error" th:if="${slotError != null}" th:text="${slotError}">
+                That slot is no longer available.
+            </div>
+
+            <form th:action="@{/edit/{token}(token=${booking.guestToken})}"
+                  th:object="${bookingForm}"
+                  method="post">
+
+                <!-- Date & time -->
+                <div class="form-group">
+                    <label class="form-label" for="startTime">
+                        Date &amp; Time <span class="req">*</span>
+                    </label>
+
+                    <div id="tz-bar" style="display:flex;align-items:center;gap:8px;
+                         margin-bottom:8px;font-size:0.78rem;color:var(--ink-3);">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="2" y1="12" x2="22" y2="12"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
+                                     15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        <span id="tz-label">Loading timezone…</span>
+                        <span style="color:var(--border)">|</span>
+                        <button type="button" id="tz-toggle"
+                                style="background:none;border:none;cursor:pointer;
+                                       color:var(--accent);font-size:0.78rem;padding:0;">
+                            Switch to host's time
+                        </button>
+                    </div>
+
+                    <div class="select-wrap">
+                        <select class="form-input" id="startTime" name="startTime">
+                            <option value="">— Select a time slot —</option>
+                        </select>
+                    </div>
+                    <span class="form-error"
+                          th:if="${#fields.hasErrors('startTime')}"
+                          th:errors="*{startTime}"></span>
+                </div>
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label class="form-label" for="guestName">
+                        Name <span class="req">*</span>
+                    </label>
+                    <input class="form-input" type="text" id="guestName"
+                           th:field="*{guestName}" placeholder="Your full name"
+                           autocomplete="name"/>
+                    <span class="form-error"
+                          th:if="${#fields.hasErrors('guestName')}"
+                          th:errors="*{guestName}"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label" for="guestEmail">
+                        Email <span class="req">*</span>
+                    </label>
+                    <input class="form-input" type="email" id="guestEmail"
+                           th:field="*{guestEmail}" placeholder="your@email.com"
+                           autocomplete="email"/>
+                    <span class="form-error"
+                          th:if="${#fields.hasErrors('guestEmail')}"
+                          th:errors="*{guestEmail}"></span>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label" for="guestNotes">
+                        Anything to share?
+                        <span style="color:var(--ink-3);font-weight:400">(optional)</span>
+                    </label>
+                    <textarea class="form-textarea" id="guestNotes"
+                              th:field="*{guestNotes}"
+                              placeholder="Share anything that will help prepare for our meeting…"></textarea>
+                </div>
+
+                <!-- Additional guests — pre-populated from existing booking -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Additional attendees
+                        <span style="color:var(--ink-3);font-weight:400">(optional)</span>
+                    </label>
+                    <div id="guests-container">
+                        <!-- Existing additional guests rendered by Thymeleaf -->
+                        <div th:each="guest, stat : *{additionalGuests}"
+                             class="guest-row"
+                             th:id="'existing-guest-' + ${stat.index}">
+                            <input type="text" class="form-input" placeholder="Name"
+                                   th:name="'additionalGuests[' + ${stat.index} + '].name'"
+                                   th:value="${guest.name}"/>
+                            <input type="email" class="form-input" placeholder="Email"
+                                   th:name="'additionalGuests[' + ${stat.index} + '].email'"
+                                   th:value="${guest.email}"/>
+                            <button type="button" class="btn-remove-guest"
+                                    onclick="this.parentElement.remove()" title="Remove">&#x2715;</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-add-guest" onclick="addGuest()">
+                        + Add another attendee
+                    </button>
+                </div>
+
+                <div class="form-footer">
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                    <a th:href="@{/cancel/{token}(token=${booking.guestToken})}"
+                       class="btn btn-ghost">Cancel booking</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+const SLOTS        = /*[[${slotsJson}]]*/ [];
+const HOST_TZ      = /*[[${hostTimezone}]]*/ 'UTC';
+const GUEST_TZ     = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const PRE_SELECTED = /*[[${bookingForm.startTime != null ? #temporals.format(bookingForm.startTime, 'yyyy-MM-dd''T''HH:mm:ss') : ''}]]*/ '';
+
+let activeDisplayTz = GUEST_TZ;
+
+function fmtTz(tz) { return tz.replace(/_/g, ' ').split('/').pop(); }
+
+function populateSlots(displayTz) {
+    const select     = document.getElementById('startTime');
+    const savedValue = select.value || PRE_SELECTED;
+    while (select.options.length > 1) select.remove(1);
+
+    let lastDate = '';
+    SLOTS.forEach(slot => {
+        const dayLabel = new Intl.DateTimeFormat('en-US', {
+            timeZone: displayTz, weekday: 'long', month: 'long', day: 'numeric'
+        }).format(new Date(slot.utcMs));
+
+        if (dayLabel !== lastDate) {
+            const sep = document.createElement('option');
+            sep.disabled = true;
+            sep.textContent = '── ' + dayLabel + ' ──';
+            select.appendChild(sep);
+            lastDate = dayLabel;
+        }
+
+        const opt = document.createElement('option');
+        opt.value = slot.value;
+        opt.textContent = new Intl.DateTimeFormat('en-US', {
+            timeZone: displayTz, hour: 'numeric', minute: '2-digit', hour12: true
+        }).format(new Date(slot.utcMs));
+        if (opt.value === savedValue) opt.selected = true;
+        select.appendChild(opt);
+    });
+}
+
+function updateTzBar() {
+    const usingGuest = (activeDisplayTz === GUEST_TZ);
+    document.getElementById('tz-label').textContent =
+        'Times shown in: ' + fmtTz(activeDisplayTz)
+        + (usingGuest ? ' (your timezone)' : ' (host\'s timezone)');
+    document.getElementById('tz-toggle').textContent =
+        usingGuest
+            ? 'Switch to host\'s time (' + fmtTz(HOST_TZ) + ')'
+            : 'Switch to your time (' + fmtTz(GUEST_TZ) + ')';
+}
+
+document.getElementById('tz-toggle').addEventListener('click', function() {
+    activeDisplayTz = (activeDisplayTz === GUEST_TZ) ? HOST_TZ : GUEST_TZ;
+    populateSlots(activeDisplayTz);
+    updateTzBar();
+});
+
+populateSlots(GUEST_TZ);
+updateTzBar();
+if (HOST_TZ === GUEST_TZ) {
+    document.getElementById('tz-toggle').style.display = 'none';
+    document.getElementById('tz-label').textContent = 'Times shown in: ' + fmtTz(GUEST_TZ);
+}
+
+// ── Additional guests ────────────────────────────────────────
+let guestCount = /*[[${#lists.size(bookingForm.additionalGuests)}]]*/ 0;
+
+function addGuest(name, email) {
+    const container = document.getElementById('guests-container');
+    const idx = guestCount++;
+    const row = document.createElement('div');
+    row.className = 'guest-row';
+    row.innerHTML =
+        '<input type="text"  class="form-input" placeholder="Name"'
+      + ' name="additionalGuests[' + idx + '].name"'
+      + ' value="' + (name  || '') + '"/>'
+      + '<input type="email" class="form-input" placeholder="Email"'
+      + ' name="additionalGuests[' + idx + '].email"'
+      + ' value="' + (email || '') + '"/>'
+      + '<button type="button" class="btn-remove-guest"'
+      + ' onclick="this.parentElement.remove()" title="Remove">&#x2715;</button>';
+    container.appendChild(row);
+}
+/*]]>*/
+</script>
+</body>
+</html>

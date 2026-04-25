@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!--
+        Template variables (set by EmailService.sendCancellationEmail):
+          ${booking}      — Booking entity (status already = CANCELLED)
+          ${eventTitle}   — EventType title string
+    -->
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                         Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f1; color: #1a1a1a;
+            -webkit-font-smoothing: antialiased;
+        }
+        .email-wrapper { width: 100%; padding: 40px 16px; background-color: #f4f4f1; }
+        .email-card {
+            max-width: 560px; margin: 0 auto; background: #ffffff;
+            border-radius: 16px; overflow: hidden; border: 1px solid #e2e0dc;
+        }
+        .email-header { background: #0a0f1e; padding: 28px 40px; text-align: center; }
+        .email-logo { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .email-logo span { color: #4f7dff; }
+        .cancelled-bar {
+            background: #fcebeb; padding: 14px 40px;
+            text-align: center; font-size: 14px;
+            font-weight: 600; color: #791f1f;
+            border-bottom: 1px solid #f7c1c1;
+        }
+        .email-body { padding: 40px 40px 32px; }
+        .email-footer {
+            background: #f4f4f1; border-top: 1px solid #e2e0dc;
+            padding: 24px 40px; text-align: center;
+            font-size: 12px; color: #888780; line-height: 1.6;
+        }
+        .email-footer a { color: #2c5fff; text-decoration: none; }
+        .email-title { font-size: 22px; font-weight: 700; color: #0d0f12; margin-bottom: 12px; }
+        .email-subtitle { font-size: 15px; color: #3c4049; line-height: 1.7; margin-bottom: 28px; }
+        .info-box {
+            background: #f4f4f1; border-radius: 10px;
+            padding: 20px 24px; margin-bottom: 28px;
+            opacity: 0.7;
+        }
+        .info-row {
+            display: flex; align-items: flex-start;
+            gap: 12px; padding: 10px 0;
+            border-bottom: 1px solid #e2e0dc; font-size: 14px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #7a808c; font-weight: 600; min-width: 100px; flex-shrink: 0; }
+        .info-value { color: #3c4049; text-decoration: line-through; }
+        .reason-box {
+            background: #fcebeb; border-radius: 10px;
+            padding: 16px 20px; margin-bottom: 28px;
+            font-size: 14px; color: #791f1f; line-height: 1.6;
+        }
+        .reason-label { font-weight: 600; margin-bottom: 4px; }
+        .btn-center { text-align: center; margin: 28px 0; }
+        .btn-primary {
+            display: inline-block; padding: 13px 30px;
+            background: #2c5fff; color: #ffffff !important;
+            border-radius: 999px; font-size: 14px;
+            font-weight: 600; text-decoration: none;
+        }
+        .divider { border: none; border-top: 1px solid #e2e0dc; margin: 24px 0; }
+        .note { font-size: 12px; color: #7a808c; line-height: 1.6; text-align: center; }
+        .note a { color: #2c5fff; }
+    </style>
+</head>
+<body>
+<div class="email-wrapper">
+    <div class="email-card">
+
+        <!-- Header -->
+        <div class="email-header">
+            <div class="email-logo">Calendly<span>.</span></div>
+        </div>
+
+        <!-- Cancelled bar -->
+        <div class="cancelled-bar">
+            Booking cancelled
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+            <h1 class="email-title">Your booking has been cancelled</h1>
+            <p class="email-subtitle">
+                Hi <strong th:text="${booking.guestName}">Sarah</strong>,
+                your upcoming meeting has been cancelled.
+                Details of the cancelled booking are below.
+            </p>
+
+            <!-- Cancelled booking details (struck through) -->
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-label">Meeting</span>
+                    <span class="info-value" th:text="${eventTitle}">30-min intro call</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Was on</span>
+                    <span class="info-value"
+                          th:text="${#temporals.format(booking.startTime, 'EEEE, MMMM d, yyyy')}">
+                        Monday, January 20, 2025
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">At</span>
+                    <span class="info-value"
+                          th:text="${#temporals.format(booking.startTime, 'h:mm a')}">
+                        10:00 AM
+                    </span>
+                </div>
+            </div>
+
+            <!-- Cancel reason (if provided) -->
+            <div class="reason-box"
+                 th:if="${booking.cancelReason != null and !booking.cancelReason.isEmpty()}">
+                <div class="reason-label">Reason</div>
+                <div th:text="${booking.cancelReason}">Meeting no longer needed.</div>
+            </div>
+
+            <!-- Rebook CTA -->
+            <div class="btn-center">
+                <a th:href="${booking.eventType.profile.bookingPageSlug != null}
+                            ? '/' + ${booking.eventType.profile.bookingPageSlug}
+                            : '/'"
+                   class="btn-primary">
+                    Book a new time
+                </a>
+            </div>
+
+            <hr class="divider"/>
+
+            <p class="note">
+                If you believe this cancellation was made in error,
+                please contact your host directly.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p>Calendly — scheduling made simple</p>
+            <p style="margin-top:6px;">
+                Booking ID: <span th:text="${booking.id}">1234</span>
+            </p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
